@@ -58,6 +58,12 @@ steps:
 #Analyzes your open-source dependencies for known vulnerabilities, as well as licenses and prepares reports that you can review directly from Azure Pipelines.
 - task: WhiteSource Bolt@20
   displayName: 'Run WhiteSource Bolt OpenSource Vulnerability Scanning'
+  condition: |
+    and (
+      succeeded(),
+      eq(variables['Build.Reason'],'pullRequest'),
+      eq(variables['System.PullRequest.TargetBranch'],'master')
+    )
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
