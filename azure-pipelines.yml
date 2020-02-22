@@ -1,12 +1,60 @@
 trigger:
-  - master
+  - '*'
   
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-16.04'
+  demands:
+    - npm
 
 variables:
   buildConfiguration: 'Release'
+  dotnetSdkVersion: '3.1.100'
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
 
 steps:
-  - script: dotnet build --configuration=$(buildConfiguration)
-    displayName: 'dotnet build $(buildConfiguration)'
+  #(UseDotNet) Donwload install .NET Core SDK 3.1.100
+  - task: UseDotNet@2
+    displayName: 'Usa .NET Code SDK $(dotnetSdkVersion)'
+    inputs:
+      packageType: sdk
+      version: $(dotnetSdkVersion)
+
+  #(Npm@1) npm install
+  - task: Npm@1
+    displayName: 'Corriendo npm install'
+    inputs:
+      verbose: false
+
+  #node-sass
+  - script: './node_modules/.bin/node-sass $(wwwrootDir) --output=$(wwwrootDir)'
+    displayName: 'Compilando Sass assets'
+
+  #gulp
+  - task: Gulp@1
+    displayName: 'Ejecutando gulp task'
+
+  #buildinfo.txt
+  - script: 'echo "$(Build.DefinitionName),$(Build.BuildId),$(Build.BuildNumber)" > buildinfo.txt'
+    displayName: 'Creando archivo buildinfo.txt'
+    workingDirectory: $(wwwrootDir)
+
+  #restore
+  - task: DotNetCoreCLI@2
+    displayName: 'Restaurando dependencias del proyecto'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  #build + publish for Debug & Release
+  - template: templates/build.yml
+    parameters:
+      buildConfiguration: 'Debug'
+
+  - template: templates/build.yml
+    parameters:
+      buildConfiguration: 'Release'
+
+  #Publish as drop
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    condition: succeeded()
