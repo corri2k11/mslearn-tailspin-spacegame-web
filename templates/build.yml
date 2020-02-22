@@ -7,13 +7,13 @@ steps:
   inputs:
     command: 'build'
     arguments: '--configuration=${{parameters.buildConfiguration}} --no-restore'
-    projects: '**/*.csproj'
+    projects: 'Tailspin.SpaceGame.Web/*.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'Compilando proyecto para ${{parameters.buildConfiguration}}'
   inputs:
     command: 'publish'
-    projects: '**/*.csproj'
+    projects: 'Tailspin.SpaceGame.Web/*.csproj'
     publishWebProjects: false
     arguments: '--no-build --configuration=${{parameters.buildConfiguration}} --output=$(Build.ArtifactStagingDirectory)/${{parameters.buildConfiguration}}'
     zipAfterPublish: true
