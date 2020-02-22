@@ -1,0 +1,66 @@
+trigger:
+  branches:
+    include:
+      - '*'
+  paths:
+    exclude:
+      - docs/*
+
+pool:
+  vmImage: 'ubuntu-16.04'
+  demands:
+    - npm
+
+variables:
+  buildConfiguration: 'Release'
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+  sdkVersion: '3.1.100'
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core SDK $(buildConfiguration)'
+    inputs:
+      version: $(sdkVersion)
+  
+  #NEW: install nuget.exe tool
+  - task: NuGetToolInstaller@0
+    inputs:
+      versionSpec: '5.4.0'
+
+  - task: Npm@1
+    displayName: 'Run npm install'
+    inputs:
+      verbose: false
+
+  - script: 'echo "$(Build.DefinitionName),$(Build.BuildId),$(Build.BuildNumber)" > buildInfo.txt'
+    displayName: 'Writing buildInfo.txt file'
+    workingDirectory: $(wwwrootDir)
+  
+  #NEW: use nuget.exe to restore/download nuget package feed from Azure Artifacts
+  - task: NuGetCommand@2
+    displayName: 'Restore nuget dependencies'
+    inputs:
+      command: 'restore'
+      restoreSolution: '**/*.sln'
+      feedsToUse: 'select'
+      vstsFeed: ''
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build project for $(buildConfiguration)'
+    inputs:
+      command: 'build'
+      arguments: '--configuration=$(buildConfiguration) --no-restore'
+      projects: '**/*.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish project for $(buildConfiguration)'
+    inputs:
+      command: 'publish'
+      arguments: '--configuration=$(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+      projects: '**/*.csproj'
+      publishWebProjects: false
+      zipAfterPublish: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    condition: succeeded()
