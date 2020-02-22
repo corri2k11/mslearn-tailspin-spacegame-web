@@ -13,7 +13,7 @@ steps:
   displayName: 'Compilando proyecto para ${{parameters.buildConfiguration}}'
   inputs:
     command: 'publish'
-    arguments: '--configuration=${{parameters.buildConfiguration}} --no-restore --output=$(Build.ArtifactStagingDirectory)/${{parameters.buildConfiguration}}'
     projects: '**/*.csproj'
     publishWebProjects: false
+    arguments: '--no-build --configuration=${{parameters.buildConfiguration}} --output=$(Build.ArtifactStagingDirectory)/${{parameters.buildConfiguration}}'
     zipAfterPublish: true
