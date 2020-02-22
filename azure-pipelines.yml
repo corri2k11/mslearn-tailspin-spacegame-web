@@ -1,12 +1,52 @@
 trigger:
-  - master
+  - '*'
   
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-16.04'
+  demands:
+    - npm
 
 variables:
   buildConfiguration: 'Release'
 
 steps:
-  - script: dotnet build --configuration=$(buildConfiguration)
-    displayName: 'dotnet build $(buildConfiguration)'
+  #(UseDotNet) Donwload install .NET Core SDK 3.1.100
+  - task: UseDotNet@2
+    displayName: 'Usa .NET Code SDK 3.1.100'
+    inputs:
+      packageType: sdk
+      version: 3.1.100
+
+  #(Npm@1) npm install
+  - task: Npm@1
+    displayName: 'Corriendo npm install'
+    inputs:
+      verbose: false
+
+  #node-sass
+  - script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output=Tailspin.SpaceGame.Web/wwwroot'
+    displayName: 'Compilando Sass assets'
+
+  #gulp
+  - task: Gulp@1
+    displayName: 'Ejecutando gulp task'
+
+  #buildinfo.txt
+  - script: 'echo "$(Build.DefinitionName),$(Build.BuildId),$(Build.BuildNumber)" > buildinfo.txt'
+    displayName: 'Creando archivo buildinfo.txt'
+    workingDirectory: Tailspin.SpaceGame.Web/wwwroot
+
+  #restore
+  - task: DotNetCoreCLI@2
+    displayName: 'Restaurando dependencias del proyecto'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  #build
+  - task: DotNetCoreCLI@2
+    displayName: 'Compilando proyecto para $(buildConfiguration) (liberacion)'
+    inputs:
+      command: 'build'
+      arguments: '--configuration=$(buildConfiguration) --no-restore'
+      projects: '**/*.csproj'
