@@ -8,14 +8,16 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  dotnetSdkVersion: '3.1.100'
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
 
 steps:
   #(UseDotNet) Donwload install .NET Core SDK 3.1.100
   - task: UseDotNet@2
-    displayName: 'Usa .NET Code SDK 3.1.100'
+    displayName: 'Usa .NET Code SDK $(dotnetSdkVersion)'
     inputs:
       packageType: sdk
-      version: 3.1.100
+      version: $(dotnetSdkVersion)
 
   #(Npm@1) npm install
   - task: Npm@1
@@ -24,7 +26,7 @@ steps:
       verbose: false
 
   #node-sass
-  - script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output=Tailspin.SpaceGame.Web/wwwroot'
+  - script: './node_modules/.bin/node-sass $(wwwrootDir) --output=$(wwwrootDir)'
     displayName: 'Compilando Sass assets'
 
   #gulp
@@ -34,7 +36,7 @@ steps:
   #buildinfo.txt
   - script: 'echo "$(Build.DefinitionName),$(Build.BuildId),$(Build.BuildNumber)" > buildinfo.txt'
     displayName: 'Creando archivo buildinfo.txt'
-    workingDirectory: Tailspin.SpaceGame.Web/wwwroot
+    workingDirectory: $(wwwrootDir)
 
   #restore
   - task: DotNetCoreCLI@2
@@ -43,21 +45,14 @@ steps:
       command: 'restore'
       projects: '**/*.csproj'
 
-  #build
-  - task: DotNetCoreCLI@2
-    displayName: 'Compilando proyecto para $(buildConfiguration)'
-    inputs:
-      command: 'build'
-      arguments: '--configuration=$(buildConfiguration) --no-restore'
-      projects: '**/*.csproj'
+  #build + publish for Debug & Release
+  - template: templates/build.yml
+    parameters:
+      buildConfiguration: 'Debug'
 
-  #Publish/zip built artifact to Pipeline artifacts folder
-  - task: DotNetCoreCLI@2
-    displayName: 'Publicar el proyecto para $(buildConfiguration)'    
-    inputs:
-      command: 'publish'
-      arguments: '--configuration=Release --no-build --output=$(Build.ArtifactStagingDirectory)/Release'
-      projects: '**/*.csproj'
+  - template: templates/build.yml
+    parameters:
+      buildConfiguration: 'Release'
 
   #Publish as drop
   - task: PublishBuildArtifacts@1
