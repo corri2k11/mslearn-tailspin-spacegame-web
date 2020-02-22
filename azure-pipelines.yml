@@ -43,7 +43,7 @@ steps:
     displayName: 'Restaurando dependencias del proyecto'
     inputs:
       command: 'restore'
-      projects: 'Tailspin.SpaceGame.Web/*.csproj'
+      projects: '**/*.csproj'
 
   #build + publish for Debug & Release
   - template: templates/build.yml
