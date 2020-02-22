@@ -45,8 +45,21 @@ steps:
 
   #build
   - task: DotNetCoreCLI@2
-    displayName: 'Compilando proyecto para $(buildConfiguration) (liberacion)'
+    displayName: 'Compilando proyecto para $(buildConfiguration)'
     inputs:
       command: 'build'
       arguments: '--configuration=$(buildConfiguration) --no-restore'
       projects: '**/*.csproj'
+
+  #Publish/zip built artifact to Pipeline artifacts folder
+  - task: DotNetCoreCLI@2
+    displayName: 'Publicar el proyecto para $(buildConfiguration)'    
+    inputs:
+      command: 'publish'
+      arguments: '--configuration=Release --no-build --output=$(Build.ArtifactStagingDirectory)/Release'
+      projects: '**/*.csproj'
+
+  #Publish as drop
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    condition: succeeded()
