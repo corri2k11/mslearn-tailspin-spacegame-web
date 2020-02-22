@@ -36,7 +36,7 @@ steps:
     displayName: 'Writing buildInfo.txt file'
     workingDirectory: $(wwwrootDir)
   
-  #NEW: use nuget.exe to restore/download nuget package feed from Azure Artifacts
+  #NEW: nuget.exe to restore Models nuget package feed from Azure Artifacts
   - task: NuGetCommand@2
     displayName: 'Restore nuget dependencies'
     inputs:
