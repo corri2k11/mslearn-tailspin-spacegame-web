@@ -36,12 +36,12 @@ steps:
     displayName: 'Writing buildInfo.txt file'
     workingDirectory: $(wwwrootDir)
   
-  #NEW: nuget.exe to restore Models nuget package feed from Azure Artifacts
+  #NEW: nuget.exe to restore Models nuget package from Azure Artifacts feed (Tailspin.SpaceGame.Web.Models.Feed)
   - task: NuGetCommand@2
     displayName: 'Restore nuget dependencies'
     inputs:
       command: 'restore'
-      restoreSolution: '**/*.sln'
+      restoreSolution: '**\*.sln'
       feedsToUse: 'select'
       vstsFeed: 'SpaceGameWebDependencies/Tailspin.SpaceGame.Web.Models.Feed'
 
