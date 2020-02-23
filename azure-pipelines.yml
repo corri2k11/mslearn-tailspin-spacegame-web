@@ -53,6 +53,12 @@ steps:
       projects: '**/*.csproj'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Restore dependencies again'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  - task: DotNetCoreCLI@2
     displayName: 'Publish project for $(buildConfiguration)'
     inputs:
       command: 'publish'
