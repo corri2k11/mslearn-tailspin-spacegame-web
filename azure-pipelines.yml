@@ -42,14 +42,9 @@ steps:
     inputs:
       command: 'restore'
       restoreSolution: '**\*.sln'
+      includeNuGetOrg: true
       feedsToUse: 'select'
       vstsFeed: 'SpaceGameWebDependencies/Tailspin.SpaceGame.Web.Models.Feed'
-  
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore dependencies again!'
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build project for $(buildConfiguration)'
