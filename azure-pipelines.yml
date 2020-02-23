@@ -42,7 +42,7 @@ steps:
     inputs:
       command: 'restore'
       restoreSolution: '**\*.sln'
-      includeNuGetOrg: true
+      includeNuGetOrg: false
       feedsToUse: 'select'
       vstsFeed: 'SpaceGameWebDependencies/Tailspin.SpaceGame.Web.Models.Feed'
 
