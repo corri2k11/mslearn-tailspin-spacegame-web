@@ -1,9 +1,12 @@
+#Swith from using a Microsoft-hosted agent to 
+#using the agent from your build pool (MyPrivateLinuxAgent).
+
 trigger:
 - '*'
 
 pool:
-  vmImage: 'ubuntu-16.04'
-  demands:
+  name: 'MyAgentPool'   #name: specified my agent pool where the 1st available/online private pool will kick in and receive the build/job request. 
+  demands:              #demads: specifies that the build agent MUST have npm installed cuz it's used here in this build configuration/definition, to  npm install  (task: Npm@1)...
     - npm
 
 variables:
