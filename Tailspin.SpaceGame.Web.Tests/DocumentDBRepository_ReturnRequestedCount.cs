@@ -43,5 +43,13 @@ namespace Tests
             //NOTE: removed the need to explicitly call the assertion cuz test method uses the "ExpectedResult" property to simplify code and help make intenion clear. Nunit will auto compare return function value against the value of ExpectedResult property.
             return scores.Count();
         }
+
+        [TestCase("Milky Way", ExpectedResult=6)]
+        [TestCase("Messier 82", ExpectedResult=4)]
+        public int ReturnCountItemsAsync(string gameRegion) 
+        {
+            Task<int> countTask = _scoreRepository.CountItemsAsync(x => x.GameRegion ==gameRegion);
+            return countTask.Result;
+        }
     }
 }
