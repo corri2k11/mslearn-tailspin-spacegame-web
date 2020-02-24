@@ -43,10 +43,21 @@ steps:
   inputs:
     command: 'build'
     arguments: '--no-restore --configuration $(buildConfiguration)'
+    projects: '**/*.Tests.csproj'
+
+#NEW: Unit Testing
+#publishTestResults: tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable, it also publishes the task/test results to the pipeline!                 
+#projects: specifies all C# projects that match "**/*.Tests.csproj
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests for $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--configuration=$(buildConfiguration) --no-build'
     projects: '**/*.csproj'
+    publishTestResults: true
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish the project - $(buildConfiguration)'
+  displayName: 'Publish the project for $(buildConfiguration)'
   inputs:
     command: 'publish'
     projects: '**/*.csproj'
