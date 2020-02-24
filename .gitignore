@@ -36,6 +36,7 @@ Generated\ Files/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
+CodeCoverageHtmlReport/
 [Bb]uild[Ll]og.*
 
 # NUNIT
@@ -332,3 +333,6 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+#sonar
+.sonarqube/

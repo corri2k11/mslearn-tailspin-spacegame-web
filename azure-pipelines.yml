@@ -39,22 +39,47 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build the project - $(buildConfiguration)'
+  displayName: 'Build the project for $(buildConfiguration)'
   inputs:
     command: 'build'
     arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.Tests.csproj'
 
-#NEW: Unit Testing
-#publishTestResults: tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable, it also publishes the task/test results to the pipeline!                 
-#projects: specifies all C# projects that match "**/*.Tests.csproj
+# #NEW: Unit Testing
+# #publishTestResults: tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable, it also publishes the task/test results to the pipeline!                 
+# #projects: specifies all C# projects that match "**/*.Tests.csproj
+# - task: DotNetCoreCLI@2
+#   displayName: 'Run unit tests for $(buildConfiguration)'
+#   inputs:
+#     command: 'test'
+#     arguments: '--configuration=$(buildConfiguration) --no-build'
+#     projects: '**/*.csproj'
+#     publishTestResults: true
+
+#NEW: Unit Testing and Code Coverage (results)
 - task: DotNetCoreCLI@2
-  displayName: 'Run unit tests for $(buildConfiguration)'
+  displayName: 'Installing HTML ReportGenerator Tool (Cobertura CodeCoverage)'
+  inputs:
+    command: 'custom'
+    custom: 'tool'
+    arguments: 'install --global dotnet-reportgenerator-globaltool'
+
+- task: DotNetCoreCLI@2   #publishes test results to pipeline
+  displayName: 'Run Unit Tests. Publish Test Results to Pipeline'
   inputs:
     command: 'test'
-    arguments: '--configuration=$(buildConfiguration) --no-build'
-    projects: '**/*.csproj'
+    arguments: '--configuration=$(buildConfiguration) --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    projects: '**/*.Tests.csproj'
     publishTestResults: true
+
+- script: 'reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir=$(Build.SourcesDirectory)/CoverageHtmlReport/ -reporttypes:HtmlInline_AzurePipeline'
+  displayName: 'Running HTML ReportGenerator Tool (Cobertura CodeCoverage Results)'
+
+- task: PublishCodeCoverageResults@1  #publishes code coverage results to pipeline
+  displayName: 'Publish CodeCoverage Results to Pipeline'
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project for $(buildConfiguration)'
